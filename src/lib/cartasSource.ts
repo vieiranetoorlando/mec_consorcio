@@ -1,7 +1,7 @@
-import { cartasMock } from "@/data/cartas.mock";
-import type { Carta } from "@/types/cartas";
+import { cartasService } from "@/domain/cartas/service";
+import type { Carta } from "@/domain/cartas/types";
 
-// Esta função isola a origem dos dados para permitir troca por API/Sheets no futuro.
+// Ponte de leitura para área pública (troca para Supabase ocorrerá após checkpoint).
 export async function getCartasContempladas(): Promise<Carta[]> {
-  return cartasMock;
+  return cartasService.listPublic();
 }

@@ -1,6 +1,8 @@
-import type { Carta } from "@/types/cartas";
+import type { Carta, CartaStatus } from "@/domain/cartas/types";
 
-export const cartasMock: Carta[] = [
+export type CartaMock = Omit<Carta, "status"> & { status?: CartaStatus };
+
+export const cartasMock: CartaMock[] = [
   {
     id: "IMV-001",
     tipo: "Imóvel",
