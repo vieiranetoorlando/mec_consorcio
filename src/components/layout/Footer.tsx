@@ -15,7 +15,7 @@ export function Footer() {
                 alt="MEC Consorcio"
                 width={128}
                 height={128}
-                className="h-full w-full object-cover"
+                className="h-full w-full scale-[1.2] object-cover object-left"
               />
             </span>
           </span>

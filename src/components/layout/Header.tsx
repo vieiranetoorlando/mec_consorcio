@@ -17,19 +17,19 @@ export function Header() {
 
   return (
     <header className="border-b border-neutral-900 bg-neutral-950/95 backdrop-blur">
-      <Container className="flex h-30 items-center justify-between">
+      <Container className="flex h-28 items-center justify-between">
         <Link href="/" className="group flex items-center gap-4">
           <span className="relative inline-flex">
             <span className="absolute inset-0 scale-110 rounded-full bg-gold-500/25 blur-md transition group-hover:bg-gold-500/35" />
             <span className="relative block h-24 w-24 overflow-hidden rounded-full border-2 border-gold-600/80 bg-black shadow-[0_8px_24px_rgba(212,169,78,0.25)]">
-            <Image
-              src="/images/mec-logo.png"
-              alt="MEC Consorcio"
-              width={192}
-              height={192}
-              className="h-full w-full object-cover"
-              priority
-            />
+              <Image
+                src="/images/mec-logo.png"
+                alt="MEC Consorcio"
+                width={192}
+                height={192}
+                className="h-full w-full scale-[1.2] object-cover object-left"
+                priority
+              />
             </span>
           </span>
           <span className="hidden text-xs font-semibold tracking-[0.24em] text-gold-300 sm:block">
