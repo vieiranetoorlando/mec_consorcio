@@ -27,7 +27,7 @@ export function Header() {
                 alt="MEC Consorcio"
                 width={192}
                 height={192}
-                className="h-full w-full scale-[1.2] object-cover object-left"
+                className="h-full w-full scale-[2.35] object-cover object-left"
                 priority
               />
             </span>
