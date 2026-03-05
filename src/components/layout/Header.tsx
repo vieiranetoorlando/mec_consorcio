@@ -12,23 +12,17 @@ const navLinks = [
 export function Header() {
   return (
     <header className="border-b border-neutral-900 bg-neutral-950/95 backdrop-blur">
-      <Container className="flex h-32 items-center justify-between">
-        <Link href="/" className="group flex items-center gap-4">
-          <span className="relative inline-flex">
-            <span className="absolute inset-0 scale-110 rounded-full bg-gold-500/20 blur-md transition group-hover:bg-gold-500/30" />
-            <span className="relative block h-28 w-28 overflow-hidden rounded-full border-2 border-gold-600/80 bg-neutral-950 shadow-[0_10px_28px_rgba(212,169,78,0.25)]">
-              <Image
-                src="/images/mec-logo.png"
-                alt="MEC Consorcio"
-                width={224}
-                height={224}
-                className="h-full w-full object-cover"
-                priority
-              />
-            </span>
-          </span>
-          <span className="hidden text-xs font-semibold tracking-[0.22em] text-gold-300 md:block">
-            MEC CONSORCIO
+      <Container className="flex h-24 items-center justify-between">
+        <Link href="/" className="flex items-center">
+          <span className="relative block h-16 w-[220px] overflow-hidden rounded-md border border-neutral-800 bg-black/80">
+            <Image
+              src="/images/mec-logo.png"
+              alt="MEC Consorcio"
+              width={660}
+              height={192}
+              className="h-full w-full object-contain p-1"
+              priority
+            />
           </span>
           <span className="sr-only">MEC Consorcio</span>
         </Link>
