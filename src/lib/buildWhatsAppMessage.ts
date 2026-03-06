@@ -1,21 +1,22 @@
+import { toCartaReference } from "@/lib/cartaReference";
 import { formatCurrencyBRL } from "@/lib/formatCurrencyBRL";
 import type { Carta, ResumoSelecao } from "@/types/cartas";
 
 export function buildWhatsAppMessage(cartas: Carta[], resumo: ResumoSelecao): string {
-  const ids = resumo.ids.join(", ");
+  const referencias = cartas.map((carta) => toCartaReference(carta.id)).join(", ");
   const composicao = resumo.parcelasComposicao
     .map((bloco) => `${bloco.meses}x ${formatCurrencyBRL(bloco.valor)}`)
     .join(" | ");
 
   return [
-    "Olá, MEC Consórcio!",
-    "Tenho interesse na seleção de cartas contempladas:",
+    "Ola, MEC Consorcio!",
+    "Tenho interesse na selecao de cartas contempladas:",
     `Administradora: ${resumo.administradora ?? "-"}`,
-    `Cartas: ${ids}`,
+    `Cartas: ${referencias}`,
     "",
-    `Crédito total: ${formatCurrencyBRL(resumo.totalCredito)}`,
+    `Credito total: ${formatCurrencyBRL(resumo.totalCredito)}`,
     `Entrada total: ${formatCurrencyBRL(resumo.totalEntrada)}`,
-    `Transferência total: ${formatCurrencyBRL(resumo.totalTransferencia)}`,
-    `Composição das parcelas: ${composicao}`,
+    `Transferencia total: ${formatCurrencyBRL(resumo.totalTransferencia)}`,
+    `Composicao das parcelas: ${composicao}`,
   ].join("\n");
 }

@@ -1,3 +1,4 @@
+import { toCartaReference } from "@/lib/cartaReference";
 import { formatCurrencyBRL } from "@/lib/formatCurrencyBRL";
 import type { Carta } from "@/types/cartas";
 
@@ -8,11 +9,13 @@ type CartaCardProps = {
 };
 
 export function CartaCard({ carta, selected, onToggle }: CartaCardProps) {
+  const referencia = toCartaReference(carta.id);
+
   return (
     <article className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs text-gold-400">{carta.id}</p>
+          <p className="text-xs text-gold-400">{referencia}</p>
           <h3 className="mt-1 text-base font-semibold text-white">{carta.tipo}</h3>
         </div>
         <input
@@ -20,14 +23,14 @@ export function CartaCard({ carta, selected, onToggle }: CartaCardProps) {
           checked={selected}
           onChange={() => onToggle(carta.id)}
           className="mt-1 h-4 w-4 accent-[#d4a94e]"
-          aria-label={`Selecionar carta ${carta.id}`}
+          aria-label={`Selecionar carta ${referencia}`}
         />
       </div>
 
       <dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
-        <div>
-          <dt className="text-neutral-400">Crédito</dt>
-          <dd className="font-semibold text-neutral-100">
+        <div className="col-span-2 rounded-md border border-neutral-800 bg-neutral-950/70 p-3">
+          <dt className="text-neutral-400">Credito</dt>
+          <dd className="mt-1 text-lg font-bold text-white">
             {formatCurrencyBRL(carta.valorCredito)}
           </dd>
         </div>
@@ -37,11 +40,17 @@ export function CartaCard({ carta, selected, onToggle }: CartaCardProps) {
         </div>
         <div>
           <dt className="text-neutral-400">Parcela</dt>
-          <dd className="font-semibold text-neutral-100">{formatCurrencyBRL(carta.parcela)}</dd>
+          <dd className="font-bold text-gold-300">{formatCurrencyBRL(carta.parcela)}</dd>
         </div>
         <div>
           <dt className="text-neutral-400">Prazo</dt>
           <dd className="font-semibold text-neutral-100">{carta.prazo} meses</dd>
+        </div>
+        <div>
+          <dt className="text-neutral-400">Transferencia</dt>
+          <dd className="font-semibold text-neutral-100">
+            {formatCurrencyBRL(carta.transferencia)}
+          </dd>
         </div>
       </dl>
 
