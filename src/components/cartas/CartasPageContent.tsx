@@ -10,6 +10,7 @@ import { Container } from "@/components/ui/Container";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { buildWhatsAppMessage } from "@/lib/buildWhatsAppMessage";
 import { computeSelectionSummary } from "@/lib/computeSelectionSummary";
+import { validateSameAdministradora } from "@/lib/validateSameAdministradora";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import type { Carta, Filtros } from "@/types/cartas";
 
@@ -28,6 +29,7 @@ const filtrosIniciais: Filtros = {
 export function CartasPageContent({ cartas }: CartasPageContentProps) {
   const [filtros, setFiltros] = useState<Filtros>(filtrosIniciais);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectionError, setSelectionError] = useState<string | null>(null);
 
   const cartasFiltradas = useMemo(() => {
     return cartas.filter((carta) => {
@@ -62,9 +64,24 @@ export function CartasPageContent({ cartas }: CartasPageContentProps) {
   }, [selectedCartas, resumo]);
 
   function handleToggle(id: string) {
-    setSelectedIds((current) =>
-      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
-    );
+    setSelectedIds((current) => {
+      const isSelected = current.includes(id);
+      if (isSelected) {
+        setSelectionError(null);
+        return current.filter((item) => item !== id);
+      }
+
+      const nextIds = [...current, id];
+      const nextCartas = cartas.filter((carta) => nextIds.includes(carta.id));
+      const validation = validateSameAdministradora(nextCartas);
+      if (!validation.ok) {
+        setSelectionError(validation.message ?? null);
+        return current;
+      }
+
+      setSelectionError(null);
+      return nextIds;
+    });
   }
 
   return (
@@ -81,6 +98,9 @@ export function CartasPageContent({ cartas }: CartasPageContentProps) {
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <div className="space-y-4">
             <p className="text-sm text-neutral-300">{cartasFiltradas.length} carta(s) encontrada(s)</p>
+            {selectionError ? (
+              <p className="text-xs font-medium text-amber-300">{selectionError}</p>
+            ) : null}
 
             <div className="grid gap-4 md:hidden">
               {cartasFiltradas.map((carta) => (

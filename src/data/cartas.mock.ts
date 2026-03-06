@@ -1,8 +1,11 @@
 import type { Carta, CartaStatus } from "@/domain/cartas/types";
 
-export type CartaMock = Omit<Carta, "status"> & { status?: CartaStatus };
+export type CartaMock = Omit<Carta, "status" | "transferencia"> & {
+  status?: CartaStatus;
+  transferencia?: number;
+};
 
-export const cartasMock: CartaMock[] = [
+const baseCartasMock: CartaMock[] = [
   {
     id: "IMV-001",
     tipo: "Imóvel",
@@ -188,3 +191,9 @@ export const cartasMock: CartaMock[] = [
     descricao: "Opção estratégica para empresas em crescimento.",
   },
 ];
+
+export const cartasMock: Carta[] = baseCartasMock.map((carta) => ({
+  ...carta,
+  status: carta.status ?? "ATIVA",
+  transferencia: carta.transferencia ?? Math.round(carta.valorCredito * 0.012),
+}));

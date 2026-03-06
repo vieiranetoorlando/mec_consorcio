@@ -18,7 +18,9 @@ export type Carta = {
   entrada: number;
   parcela: number;
   prazo: number;
+  transferencia: number;
   administradora: string;
+  logoAdministradora?: string;
   descricao?: string;
   status: CartaStatus;
   ownerId?: string;
@@ -39,8 +41,11 @@ export type ResumoSelecao = {
   ids: string[];
   totalCredito: number;
   totalEntrada: number;
+  totalTransferencia: number;
   totalParcelas: number;
   maiorPrazo: number;
+  administradora?: string;
+  parcelasComposicao: { meses: number; valor: number }[];
 };
 
 export type CartaDbRow = {
@@ -50,7 +55,9 @@ export type CartaDbRow = {
   entrada: number | string;
   parcela: number | string;
   prazo: number;
+  transferencia?: number | string | null;
   administradora: string;
+  logo_administradora?: string | null;
   descricao: string | null;
   status: string;
   owner_id: string;

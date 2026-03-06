@@ -18,6 +18,10 @@ export function SelectionSummarySticky({
 
       <dl className="mt-4 space-y-2 text-xs text-neutral-200">
         <div className="flex justify-between gap-4">
+          <dt>Administradora</dt>
+          <dd>{resumo.administradora ?? "-"}</dd>
+        </div>
+        <div className="flex justify-between gap-4">
           <dt>Cartas</dt>
           <dd>{resumo.quantidade}</dd>
         </div>
@@ -30,14 +34,22 @@ export function SelectionSummarySticky({
           <dd>{formatCurrencyBRL(resumo.totalEntrada)}</dd>
         </div>
         <div className="flex justify-between gap-4">
-          <dt>Total parcelas</dt>
-          <dd>{formatCurrencyBRL(resumo.totalParcelas)}</dd>
-        </div>
-        <div className="flex justify-between gap-4">
-          <dt>Maior prazo</dt>
-          <dd>{resumo.maiorPrazo} meses</dd>
+          <dt>Total transferencia</dt>
+          <dd>{formatCurrencyBRL(resumo.totalTransferencia)}</dd>
         </div>
       </dl>
+
+      <div className="mt-4 space-y-2">
+        <p className="text-xs font-semibold text-gold-300">Composição das parcelas</p>
+        <ul className="space-y-1 text-xs text-neutral-200">
+          {resumo.parcelasComposicao.map((bloco, index) => (
+            <li key={`${bloco.meses}-${index}`} className="flex justify-between gap-3">
+              <span>{bloco.meses}x</span>
+              <span>{formatCurrencyBRL(bloco.valor)}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       <a
         href={whatsappLink}

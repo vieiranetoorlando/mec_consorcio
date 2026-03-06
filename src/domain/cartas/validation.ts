@@ -15,6 +15,7 @@ export function validateCreateCarta(input: CreateCartaInput): void {
   assertPositive(input.entrada, "entrada");
   assertPositive(input.parcela, "parcela");
   assertPositive(input.prazo, "prazo");
+  assertPositive(input.transferencia, "transferencia");
 }
 
 export function validateUpdateCarta(input: UpdateCartaInput): void {
@@ -24,4 +25,5 @@ export function validateUpdateCarta(input: UpdateCartaInput): void {
   if (input.entrada !== undefined) assertPositive(input.entrada, "entrada");
   if (input.parcela !== undefined) assertPositive(input.parcela, "parcela");
   if (input.prazo !== undefined) assertPositive(input.prazo, "prazo");
+  if (input.transferencia !== undefined) assertPositive(input.transferencia, "transferencia");
 }

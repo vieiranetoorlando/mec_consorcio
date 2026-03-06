@@ -13,6 +13,7 @@ type CartaForm = {
   valorCredito: number;
   entrada: number;
   parcela: number;
+  transferencia: number;
   prazo: number;
   administradora: string;
   descricao: string;
@@ -24,6 +25,7 @@ const initialForm: CartaForm = {
   valorCredito: 0,
   entrada: 0,
   parcela: 0,
+  transferencia: 0,
   prazo: 1,
   administradora: "",
   descricao: "",
@@ -90,6 +92,7 @@ export function AdminCartasManager() {
       valorCredito: item.valorCredito,
       entrada: item.entrada,
       parcela: item.parcela,
+      transferencia: item.transferencia,
       prazo: item.prazo,
       administradora: item.administradora,
       descricao: item.descricao ?? "",
@@ -213,6 +216,11 @@ export function AdminCartasManager() {
             label="Parcela"
             value={form.parcela}
             onChange={(value) => setForm((prev) => ({ ...prev, parcela: value }))}
+          />
+          <NumberField
+            label="Transferencia"
+            value={form.transferencia}
+            onChange={(value) => setForm((prev) => ({ ...prev, transferencia: value }))}
           />
           <NumberField
             label="Prazo (meses)"
