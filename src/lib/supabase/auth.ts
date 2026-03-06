@@ -5,10 +5,14 @@ const ADMIN_USER_ID = "d08b72a0-1a9f-4b44-acb4-605deb835812";
 const ADMIN_EMAIL = "mec.contemplado@gmail.com";
 
 export async function getCurrentUser() {
-  const supabase = await getSupabaseServerClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error) return null;
-  return data.user;
+  try {
+    const supabase = await getSupabaseServerClient();
+    const { data, error } = await supabase.auth.getUser();
+    if (error) return null;
+    return data.user;
+  } catch {
+    return null;
+  }
 }
 
 export async function requireAdminUser() {
