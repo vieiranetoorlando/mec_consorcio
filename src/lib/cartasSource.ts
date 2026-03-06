@@ -1,7 +1,8 @@
 import { cartasService } from "@/domain/cartas/service";
 import type { Carta } from "@/domain/cartas/types";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 
-// Ponte de leitura para área pública (troca para Supabase ocorrerá após checkpoint).
 export async function getCartasContempladas(): Promise<Carta[]> {
-  return cartasService.listPublic();
+  const supabase = await getSupabaseServerClient();
+  return cartasService.listPublic(supabase);
 }

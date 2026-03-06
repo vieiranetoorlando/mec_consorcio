@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MEC Consorcio - Fullstack Next.js + Supabase
 
-## Getting Started
+Projeto fullstack em Next.js (App Router) para geracao de leads via WhatsApp e gestao de cartas contempladas em area administrativa.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Next.js (App Router)
+- TypeScript
+- TailwindCSS
+- ESLint
+- Prettier
+- Supabase (Postgres + Auth + RLS)
+
+## Estrutura
+
+```txt
+src/
+  app/
+    (public)/
+      page.tsx
+      cartas/page.tsx
+      sobre/page.tsx
+    (admin)/
+      admin/login/page.tsx
+      admin/cartas/page.tsx
+    api/
+      cartas/route.ts
+      admin/cartas/route.ts
+      admin/cartas/[id]/route.ts
+  components/
+    layout/
+    home/
+    cartas/
+    admin/
+    ui/
+  domain/
+    cartas/
+      types.ts
+      mapper.ts
+      service.ts
+      validation.ts
+  lib/
+    supabase/
+      client.ts
+      server.ts
+      auth.ts
+    http/
+      responses.ts
+      errors.ts
+  data/
+    cartas.mock.ts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Variaveis de ambiente
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Crie `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+```
 
-## Learn More
+Use `.env.example` como referencia.
 
-To learn more about Next.js, take a look at the following resources:
+## Supabase (resumo)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Criar projeto.
+2. Criar tabela `public.cartas`.
+3. Ativar RLS.
+4. Criar policies de leitura publica de ATIVA e CRUD do owner autenticado.
+5. Criar usuario admin (Menderson) no Auth.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Regras de negocio
 
-## Deploy on Vercel
+- Publico: ve apenas cartas com status `ATIVA`.
+- Admin autenticado autorizado: ve todas as proprias cartas (`ATIVA`, `VENDIDA`, `PAUSADA`) e faz CRUD.
+- Front usa camelCase; banco usa snake_case (mapper no dominio faz conversao).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Rotas API
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `GET /api/cartas`
+- `GET /api/admin/cartas`
+- `POST /api/admin/cartas`
+- `PATCH /api/admin/cartas/[id]`
+- `DELETE /api/admin/cartas/[id]`
+
+## Rodando local
+
+```bash
+npm install
+npm run dev
+```
+
+Aplicacao em `http://localhost:3000`.
+
+## Validacao antes de deploy
+
+```bash
+npm run lint
+npm run build
+```
+
+## Deploy
+
+Deploy recomendado: Vercel.
+
+- Conectar repositório GitHub.
+- Configurar env vars na Vercel:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`

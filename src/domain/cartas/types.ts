@@ -53,7 +53,7 @@ export type CartaDbRow = {
   administradora: string;
   descricao: string | null;
   status: string;
-  owner_id: string | null;
+  owner_id: string;
   created_at: string;
   updated_at: string;
 };

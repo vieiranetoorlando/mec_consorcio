@@ -1,11 +1,13 @@
 import { cartasService } from "@/domain/cartas/service";
 import { fail, ok } from "@/lib/http/responses";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function GET() {
   try {
-    const cartas = await cartasService.listPublic();
+    const supabase = await getSupabaseServerClient();
+    const cartas = await cartasService.listPublic(supabase);
     return ok({ data: cartas });
   } catch {
-    return fail("Não foi possível carregar as cartas.", 500);
+    return fail("Nao foi possivel carregar as cartas.", 500);
   }
 }

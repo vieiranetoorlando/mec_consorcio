@@ -15,7 +15,7 @@ export function fromDbToCarta(row: CartaDbRow): Carta {
     administradora: row.administradora,
     descricao: row.descricao ?? undefined,
     status: row.status as CartaStatus,
-    ownerId: row.owner_id ?? undefined,
+    ownerId: row.owner_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

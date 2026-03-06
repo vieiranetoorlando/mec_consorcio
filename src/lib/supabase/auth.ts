@@ -1,4 +1,22 @@
-// Auth helper (implementação final após checkpoint Supabase).
+import { AppError } from "@/lib/http/errors";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
+
+const ADMIN_USER_ID = "d08b72a0-1a9f-4b44-acb4-605deb835812";
+const ADMIN_EMAIL = "mec.contemplado@gmail.com";
+
+export async function getCurrentUser() {
+  const supabase = await getSupabaseServerClient();
+  const { data, error } = await supabase.auth.getUser();
+  if (error) return null;
+  return data.user;
+}
+
 export async function requireAdminUser() {
-  throw new Error("Supabase Auth ainda não configurado. Complete o checkpoint primeiro.");
+  const user = await getCurrentUser();
+  if (!user) throw new AppError("Não autenticado.", 401);
+
+  const isAllowed = user.id === ADMIN_USER_ID || user.email === ADMIN_EMAIL;
+  if (!isAllowed) throw new AppError("Acesso negado.", 403);
+
+  return user;
 }
