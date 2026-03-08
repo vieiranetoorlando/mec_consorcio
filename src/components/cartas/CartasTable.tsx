@@ -1,4 +1,5 @@
 import { toCartaReference } from "@/lib/cartaReference";
+import { formatParcelasFlow } from "@/lib/cartas";
 import { formatCurrencyBRL } from "@/lib/formatCurrencyBRL";
 import type { Carta } from "@/types/cartas";
 
@@ -21,6 +22,8 @@ export function CartasTable({ cartas, selectedIds, onToggle }: CartasTableProps)
             <th className="px-4 py-3 text-right">Entrada</th>
             <th className="px-4 py-3 text-right">Parcela</th>
             <th className="px-4 py-3">Prazo</th>
+            <th className="px-4 py-3 text-right">Saldo Devedor</th>
+            <th className="px-4 py-3">Fluxo</th>
             <th className="px-4 py-3 text-right">Transferencia</th>
             <th className="px-4 py-3">Administradora</th>
           </tr>
@@ -51,6 +54,10 @@ export function CartasTable({ cartas, selectedIds, onToggle }: CartasTableProps)
                 {formatCurrencyBRL(carta.parcela)}
               </td>
               <td className="px-4 py-3">{carta.prazo} meses</td>
+              <td className="px-4 py-3 text-right tabular-nums">
+                {formatCurrencyBRL(carta.saldoDevedor)}
+              </td>
+              <td className="px-4 py-3">{formatParcelasFlow(carta.parcelas)}</td>
               <td className="px-4 py-3 text-right tabular-nums">
                 {formatCurrencyBRL(carta.transferencia)}
               </td>

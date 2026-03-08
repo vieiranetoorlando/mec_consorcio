@@ -1,4 +1,5 @@
 import { toCartaReference } from "@/lib/cartaReference";
+import { formatParcelasFlow } from "@/lib/cartas";
 import { formatCurrencyBRL } from "@/lib/formatCurrencyBRL";
 import type { Carta } from "@/types/cartas";
 
@@ -51,6 +52,16 @@ export function CartaCard({ carta, selected, onToggle }: CartaCardProps) {
           <dd className="font-semibold text-neutral-100">
             {formatCurrencyBRL(carta.transferencia)}
           </dd>
+        </div>
+        <div className="col-span-2">
+          <dt className="text-neutral-400">Saldo devedor</dt>
+          <dd className="font-semibold text-neutral-100">
+            {formatCurrencyBRL(carta.saldoDevedor)}
+          </dd>
+        </div>
+        <div className="col-span-2">
+          <dt className="text-neutral-400">Fluxo</dt>
+          <dd className="font-semibold text-neutral-100">{formatParcelasFlow(carta.parcelas)}</dd>
         </div>
       </dl>
 

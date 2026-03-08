@@ -1,14 +1,20 @@
 import { computeParcelComposition } from "@/lib/computeParcelComposition";
+import { calculateSaldoDevedor } from "@/lib/cartas";
+import { CARTA_TIPOS } from "@/types/cartas";
 import type { Carta } from "@/types/cartas";
 
 function mockCarta(id: string, prazo: number, parcela: number): Carta {
+  const parcelas = [{ prazo, valor: parcela }];
+
   return {
     id,
-    tipo: "Imóvel",
+    tipo: CARTA_TIPOS[0],
     valorCredito: 100000,
     entrada: 10000,
+    parcelas,
     parcela,
     prazo,
+    saldoDevedor: calculateSaldoDevedor(parcelas),
     transferencia: 1000,
     administradora: "Porto Seguro",
     status: "ATIVA",

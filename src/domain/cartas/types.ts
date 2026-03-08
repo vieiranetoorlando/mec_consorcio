@@ -11,13 +11,20 @@ export const CARTA_STATUS = ["ATIVA", "VENDIDA", "PAUSADA"] as const;
 export type CartaTipo = (typeof CARTA_TIPOS)[number];
 export type CartaStatus = (typeof CARTA_STATUS)[number];
 
+export type ParcelaBloco = {
+  prazo: number;
+  valor: number;
+};
+
 export type Carta = {
   id: string;
   tipo: CartaTipo;
   valorCredito: number;
   entrada: number;
+  parcelas: ParcelaBloco[];
   parcela: number;
   prazo: number;
+  saldoDevedor: number;
   transferencia: number;
   administradora: string;
   logoAdministradora?: string;
@@ -42,6 +49,7 @@ export type ResumoSelecao = {
   totalCredito: number;
   totalEntrada: number;
   totalTransferencia: number;
+  totalSaldoDevedor: number;
   totalParcelas: number;
   maiorPrazo: number;
   administradora?: string;
@@ -53,8 +61,10 @@ export type CartaDbRow = {
   tipo: string;
   valor_credito: number | string;
   entrada: number | string;
+  parcelas_json?: unknown;
   parcela: number | string;
   prazo: number;
+  saldo_devedor?: number | string | null;
   transferencia?: number | string | null;
   administradora: string;
   logo_administradora?: string | null;

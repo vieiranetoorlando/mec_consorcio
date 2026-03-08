@@ -1,4 +1,9 @@
 import type { Carta, CartaDbRow, CartaStatus, CartaTipo } from "@/domain/cartas/types";
+import {
+  calculateSaldoDevedor,
+  deriveLegacyParcelFields,
+  normalizeParcelas,
+} from "@/lib/cartas";
 
 function toNumber(value: number | string | null | undefined): number {
   if (value === null || value === undefined || value === "") return 0;
@@ -6,13 +11,21 @@ function toNumber(value: number | string | null | undefined): number {
 }
 
 export function fromDbToCarta(row: CartaDbRow): Carta {
+  const parcelas = normalizeParcelas(row.parcelas_json, row.prazo, toNumber(row.parcela));
+  const legacy = deriveLegacyParcelFields(parcelas);
+
   return {
     id: row.id,
     tipo: row.tipo as CartaTipo,
     valorCredito: toNumber(row.valor_credito),
     entrada: toNumber(row.entrada),
-    parcela: toNumber(row.parcela),
-    prazo: row.prazo,
+    parcelas,
+    parcela: legacy.parcela,
+    prazo: legacy.prazo,
+    saldoDevedor:
+      row.saldo_devedor === null || row.saldo_devedor === undefined
+        ? calculateSaldoDevedor(parcelas)
+        : toNumber(row.saldo_devedor),
     transferencia: toNumber(row.transferencia),
     administradora: row.administradora,
     logoAdministradora: row.logo_administradora ?? undefined,
@@ -29,8 +42,10 @@ export function fromCartaToDb(carta: Partial<Carta>) {
     ...(carta.tipo ? { tipo: carta.tipo } : {}),
     ...(carta.valorCredito !== undefined ? { valor_credito: carta.valorCredito } : {}),
     ...(carta.entrada !== undefined ? { entrada: carta.entrada } : {}),
+    ...(carta.parcelas !== undefined ? { parcelas_json: carta.parcelas } : {}),
     ...(carta.parcela !== undefined ? { parcela: carta.parcela } : {}),
     ...(carta.prazo !== undefined ? { prazo: carta.prazo } : {}),
+    ...(carta.saldoDevedor !== undefined ? { saldo_devedor: carta.saldoDevedor } : {}),
     ...(carta.transferencia !== undefined ? { transferencia: carta.transferencia } : {}),
     ...(carta.administradora !== undefined ? { administradora: carta.administradora } : {}),
     ...(carta.logoAdministradora !== undefined

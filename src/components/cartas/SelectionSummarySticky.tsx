@@ -34,8 +34,12 @@ export function SelectionSummarySticky({
           <dd>{formatCurrencyBRL(resumo.totalEntrada)}</dd>
         </div>
         <div className="flex justify-between gap-4">
-          <dt>Total transferencia</dt>
+          <dt>Total transferência</dt>
           <dd>{formatCurrencyBRL(resumo.totalTransferencia)}</dd>
+        </div>
+        <div className="flex justify-between gap-4">
+          <dt>Saldo devedor</dt>
+          <dd>{formatCurrencyBRL(resumo.totalSaldoDevedor)}</dd>
         </div>
       </dl>
 

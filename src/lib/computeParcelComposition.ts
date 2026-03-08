@@ -7,7 +7,12 @@ export type ParcelaComposicao = {
 
 export function computeParcelComposition(cartas: Carta[]): ParcelaComposicao[] {
   const ativos = cartas
-    .map((carta) => ({ prazoRestante: carta.prazo, parcelaValor: carta.parcela }))
+    .flatMap((carta) =>
+      carta.parcelas.map((bloco) => ({
+        prazoRestante: bloco.prazo,
+        parcelaValor: bloco.valor,
+      })),
+    )
     .filter((carta) => carta.prazoRestante > 0);
 
   const composicao: ParcelaComposicao[] = [];

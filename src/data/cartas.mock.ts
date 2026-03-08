@@ -1,8 +1,11 @@
-import type { Carta, CartaStatus } from "@/domain/cartas/types";
+import type { Carta, CartaStatus, ParcelaBloco } from "@/domain/cartas/types";
+import { calculateSaldoDevedor } from "@/lib/cartas";
 
-export type CartaMock = Omit<Carta, "status" | "transferencia"> & {
+export type CartaMock = Omit<Carta, "status" | "transferencia" | "parcelas" | "saldoDevedor"> & {
   status?: CartaStatus;
   transferencia?: number;
+  parcelas?: ParcelaBloco[];
+  saldoDevedor?: number;
 };
 
 const baseCartasMock: CartaMock[] = [
@@ -194,6 +197,8 @@ const baseCartasMock: CartaMock[] = [
 
 export const cartasMock: Carta[] = baseCartasMock.map((carta) => ({
   ...carta,
+  parcelas: [{ prazo: carta.prazo, valor: carta.parcela }],
+  saldoDevedor: calculateSaldoDevedor([{ prazo: carta.prazo, valor: carta.parcela }]),
   status: carta.status ?? "ATIVA",
   transferencia: carta.transferencia ?? Math.round(carta.valorCredito * 0.012),
 }));

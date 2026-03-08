@@ -3,30 +3,54 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type { Carta, CartaStatus, CartaTipo } from "@/domain/cartas/types";
+import type {
+  Carta,
+  CartaStatus,
+  CartaTipo,
+  CreateCartaInput,
+  ParcelaBloco,
+} from "@/domain/cartas/types";
 import { CARTA_STATUS, CARTA_TIPOS } from "@/domain/cartas/types";
+import {
+  calculateSaldoDevedor,
+  deriveLegacyParcelFields,
+  formatParcelasFlow,
+} from "@/lib/cartas";
+import { formatCurrencyInput, parseCurrencyInput } from "@/lib/currency";
 import { formatCurrencyBRL } from "@/lib/formatCurrencyBRL";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
+type ParcelaForm = {
+  id: string;
+  prazo: number;
+  valor: string;
+};
+
 type CartaForm = {
   tipo: CartaTipo;
-  valorCredito: number;
-  entrada: number;
-  parcela: number;
-  transferencia: number;
-  prazo: number;
+  valorCredito: string;
+  entrada: string;
+  transferencia: string;
+  parcelas: ParcelaForm[];
   administradora: string;
   descricao: string;
   status: CartaStatus;
 };
 
+function createParcelaForm(bloco?: Partial<ParcelaBloco>): ParcelaForm {
+  return {
+    id: crypto.randomUUID(),
+    prazo: bloco?.prazo ?? 1,
+    valor: bloco?.valor ? formatCurrencyInput(bloco.valor) : "",
+  };
+}
+
 const initialForm: CartaForm = {
-  tipo: "Imóvel",
-  valorCredito: 0,
-  entrada: 0,
-  parcela: 0,
-  transferencia: 0,
-  prazo: 1,
+  tipo: CARTA_TIPOS[0],
+  valorCredito: "",
+  entrada: "",
+  transferencia: "",
+  parcelas: [createParcelaForm()],
   administradora: "",
   descricao: "",
   status: "ATIVA",
@@ -44,6 +68,7 @@ export function AdminCartasManager() {
   async function load(options?: { resetError?: boolean }) {
     if (options?.resetError) setError(null);
     setLoading(true);
+
     const response = await fetch("/api/admin/cartas", { cache: "no-store" });
     const payload = await response.json();
 
@@ -80,8 +105,31 @@ export function AdminCartasManager() {
     [editingId],
   );
 
+  const parcelasNormalizadas = useMemo(
+    () =>
+      form.parcelas.map((bloco) => ({
+        prazo: Math.max(1, Math.trunc(bloco.prazo || 0)),
+        valor: parseCurrencyInput(bloco.valor),
+      })),
+    [form.parcelas],
+  );
+
+  const resumoParcelas = useMemo(() => {
+    const legacy = deriveLegacyParcelFields(parcelasNormalizadas);
+
+    return {
+      parcela: legacy.parcela,
+      prazo: legacy.prazo,
+      saldoDevedor: calculateSaldoDevedor(parcelasNormalizadas),
+      fluxo: formatParcelasFlow(parcelasNormalizadas),
+    };
+  }, [parcelasNormalizadas]);
+
   function resetForm() {
-    setForm(initialForm);
+    setForm({
+      ...initialForm,
+      parcelas: [createParcelaForm()],
+    });
     setEditingId(null);
   }
 
@@ -89,15 +137,64 @@ export function AdminCartasManager() {
     setEditingId(item.id);
     setForm({
       tipo: item.tipo,
-      valorCredito: item.valorCredito,
-      entrada: item.entrada,
-      parcela: item.parcela,
-      transferencia: item.transferencia,
-      prazo: item.prazo,
+      valorCredito: formatCurrencyInput(item.valorCredito),
+      entrada: formatCurrencyInput(item.entrada),
+      transferencia: formatCurrencyInput(item.transferencia),
+      parcelas: item.parcelas.map((bloco) => createParcelaForm(bloco)),
       administradora: item.administradora,
       descricao: item.descricao ?? "",
       status: item.status,
     });
+  }
+
+  function updateParcela(id: string, field: "prazo" | "valor", value: string | number) {
+    setForm((prev) => ({
+      ...prev,
+      parcelas: prev.parcelas.map((bloco) =>
+        bloco.id === id ? { ...bloco, [field]: value } : bloco,
+      ),
+    }));
+  }
+
+  function addParcela() {
+    setForm((prev) => ({
+      ...prev,
+      parcelas: [...prev.parcelas, createParcelaForm()],
+    }));
+  }
+
+  function removeParcela(id: string) {
+    setForm((prev) => {
+      if (prev.parcelas.length === 1) return prev;
+
+      return {
+        ...prev,
+        parcelas: prev.parcelas.filter((bloco) => bloco.id !== id),
+      };
+    });
+  }
+
+  function buildPayload(): CreateCartaInput {
+    const parcelas = form.parcelas.map((bloco) => ({
+      prazo: Math.max(1, Math.trunc(bloco.prazo || 0)),
+      valor: parseCurrencyInput(bloco.valor),
+    }));
+
+    const legacy = deriveLegacyParcelFields(parcelas);
+
+    return {
+      tipo: form.tipo,
+      valorCredito: parseCurrencyInput(form.valorCredito),
+      entrada: parseCurrencyInput(form.entrada),
+      parcelas,
+      parcela: legacy.parcela,
+      prazo: legacy.prazo,
+      saldoDevedor: calculateSaldoDevedor(parcelas),
+      transferencia: parseCurrencyInput(form.transferencia),
+      administradora: form.administradora.trim(),
+      descricao: form.descricao.trim() ? form.descricao.trim() : undefined,
+      status: form.status,
+    };
   }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -105,10 +202,13 @@ export function AdminCartasManager() {
     setSaving(true);
     setError(null);
 
-    const payload = {
-      ...form,
-      descricao: form.descricao.trim() ? form.descricao : undefined,
-    };
+    const payload = buildPayload();
+
+    if (payload.parcelas.length === 0) {
+      setSaving(false);
+      setError("Adicione ao menos um bloco de parcelas.");
+      return;
+    }
 
     const response = await fetch(
       editingId ? `/api/admin/cartas/${editingId}` : "/api/admin/cartas",
@@ -202,30 +302,20 @@ export function AdminCartasManager() {
             </select>
           </label>
 
-          <NumberField
-            label="Valor de crédito"
+          <MoneyField
+            label={"Valor de cr\u00E9dito"}
             value={form.valorCredito}
             onChange={(value) => setForm((prev) => ({ ...prev, valorCredito: value }))}
           />
-          <NumberField
+          <MoneyField
             label="Entrada"
             value={form.entrada}
             onChange={(value) => setForm((prev) => ({ ...prev, entrada: value }))}
           />
-          <NumberField
-            label="Parcela"
-            value={form.parcela}
-            onChange={(value) => setForm((prev) => ({ ...prev, parcela: value }))}
-          />
-          <NumberField
+          <MoneyField
             label="Transferencia"
             value={form.transferencia}
             onChange={(value) => setForm((prev) => ({ ...prev, transferencia: value }))}
-          />
-          <NumberField
-            label="Prazo (meses)"
-            value={form.prazo}
-            onChange={(value) => setForm((prev) => ({ ...prev, prazo: Math.max(1, value) }))}
           />
 
           <label className="space-y-1 text-xs text-neutral-300 sm:col-span-2">
@@ -239,6 +329,66 @@ export function AdminCartasManager() {
               className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-white"
             />
           </label>
+
+          <div className="space-y-3 sm:col-span-2">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-semibold text-neutral-200">Blocos de parcelas</span>
+              <button
+                type="button"
+                onClick={addParcela}
+                className="rounded-md border border-neutral-700 px-3 py-2 text-xs font-semibold text-neutral-200 transition hover:bg-neutral-900"
+              >
+                Adicionar bloco
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {form.parcelas.map((bloco, index) => (
+                <div
+                  key={bloco.id}
+                  className="grid gap-3 rounded-lg border border-neutral-800 bg-neutral-950/70 p-3 sm:grid-cols-[140px_1fr_auto]"
+                >
+                  <label className="space-y-1 text-xs text-neutral-300">
+                    <span>Prazo</span>
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={bloco.prazo}
+                      onChange={(event) =>
+                        updateParcela(bloco.id, "prazo", Number(event.target.value))
+                      }
+                      className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-white"
+                    />
+                  </label>
+
+                  <MoneyField
+                    label={`Parcela ${index + 1}`}
+                    value={bloco.valor}
+                    onChange={(value) => updateParcela(bloco.id, "valor", value)}
+                  />
+
+                  <div className="flex items-end">
+                    <button
+                      type="button"
+                      onClick={() => removeParcela(bloco.id)}
+                      disabled={form.parcelas.length === 1}
+                      className="rounded-md border border-neutral-700 px-3 py-2 text-xs font-semibold text-neutral-200 transition hover:bg-neutral-900 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="rounded-lg border border-neutral-800 bg-neutral-950/70 p-3 text-xs text-neutral-300">
+              <p>Parcela atual derivada: {formatCurrencyBRL(resumoParcelas.parcela)}</p>
+              <p>Prazo total derivado: {resumoParcelas.prazo} meses</p>
+              <p>Saldo devedor calculado: {formatCurrencyBRL(resumoParcelas.saldoDevedor)}</p>
+              {resumoParcelas.fluxo ? <p>Fluxo: {resumoParcelas.fluxo}</p> : null}
+            </div>
+          </div>
 
           <label className="space-y-1 text-xs text-neutral-300 sm:col-span-2">
             <span>Descricao (opcional)</span>
@@ -281,7 +431,8 @@ export function AdminCartasManager() {
               <th className="px-4 py-3">ID</th>
               <th className="px-4 py-3">Tipo</th>
               <th className="px-4 py-3">Credito</th>
-              <th className="px-4 py-3">Parcela</th>
+              <th className="px-4 py-3">Fluxo</th>
+              <th className="px-4 py-3">Saldo devedor</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Acoes</th>
             </tr>
@@ -289,13 +440,13 @@ export function AdminCartasManager() {
           <tbody>
             {loading ? (
               <tr>
-                <td className="px-4 py-6 text-neutral-300" colSpan={6}>
+                <td className="px-4 py-6 text-neutral-300" colSpan={7}>
                   Carregando...
                 </td>
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td className="px-4 py-6 text-neutral-300" colSpan={6}>
+                <td className="px-4 py-6 text-neutral-300" colSpan={7}>
                   Nenhuma carta cadastrada.
                 </td>
               </tr>
@@ -305,7 +456,8 @@ export function AdminCartasManager() {
                   <td className="px-4 py-3 text-xs text-gold-300">{item.id.slice(0, 8)}</td>
                   <td className="px-4 py-3">{item.tipo}</td>
                   <td className="px-4 py-3">{formatCurrencyBRL(item.valorCredito)}</td>
-                  <td className="px-4 py-3">{formatCurrencyBRL(item.parcela)}</td>
+                  <td className="px-4 py-3">{formatParcelasFlow(item.parcelas)}</td>
+                  <td className="px-4 py-3">{formatCurrencyBRL(item.saldoDevedor)}</td>
                   <td className="px-4 py-3">{item.status}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
@@ -333,21 +485,25 @@ export function AdminCartasManager() {
   );
 }
 
-type NumberFieldProps = {
+type MoneyFieldProps = {
   label: string;
-  value: number;
-  onChange: (value: number) => void;
+  value: string;
+  onChange: (value: string) => void;
 };
 
-function NumberField({ label, value, onChange }: NumberFieldProps) {
+function MoneyField({ label, value, onChange }: MoneyFieldProps) {
   return (
     <label className="space-y-1 text-xs text-neutral-300">
       <span>{label}</span>
       <input
-        type="number"
-        min={0}
+        type="text"
+        inputMode="decimal"
         value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
+        onChange={(event) => onChange(event.target.value)}
+        onBlur={() => {
+          if (!value.trim()) return;
+          onChange(formatCurrencyInput(parseCurrencyInput(value)));
+        }}
         className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-white"
       />
     </label>

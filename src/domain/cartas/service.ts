@@ -8,9 +8,42 @@ import type {
   UpdateCartaInput,
 } from "@/domain/cartas/types";
 import { validateCreateCarta, validateUpdateCarta } from "@/domain/cartas/validation";
+import {
+  calculateSaldoDevedor,
+  deriveLegacyParcelFields,
+  normalizeParcelas,
+} from "@/lib/cartas";
 
 function getBaseQuery(client: SupabaseClient) {
   return client.from("cartas").select("*");
+}
+
+function enrichCreateInput(input: CreateCartaInput): CreateCartaInput {
+  const parcelas = normalizeParcelas(input.parcelas, input.prazo, input.parcela);
+  const legacy = deriveLegacyParcelFields(parcelas);
+
+  return {
+    ...input,
+    parcelas,
+    parcela: legacy.parcela,
+    prazo: legacy.prazo,
+    saldoDevedor: calculateSaldoDevedor(parcelas),
+  };
+}
+
+function enrichUpdateInput(input: UpdateCartaInput): UpdateCartaInput {
+  if (input.parcelas === undefined) return input;
+
+  const parcelas = normalizeParcelas(input.parcelas, input.prazo ?? 0, input.parcela ?? 0);
+  const legacy = deriveLegacyParcelFields(parcelas);
+
+  return {
+    ...input,
+    parcelas,
+    parcela: legacy.parcela,
+    prazo: legacy.prazo,
+    saldoDevedor: calculateSaldoDevedor(parcelas),
+  };
 }
 
 export const cartasService = {
@@ -37,8 +70,9 @@ export const cartasService = {
     ownerId: string,
     input: CreateCartaInput,
   ): Promise<Carta> {
-    validateCreateCarta(input);
-    const payload = fromCartaToDb({ ...input, ownerId });
+    const enriched = enrichCreateInput(input);
+    validateCreateCarta(enriched);
+    const payload = fromCartaToDb({ ...enriched, ownerId });
     const { data, error } = await client
       .from("cartas")
       .insert(payload)
@@ -54,8 +88,9 @@ export const cartasService = {
     id: string,
     input: UpdateCartaInput,
   ): Promise<Carta | null> {
-    validateUpdateCarta(input);
-    const payload = fromCartaToDb(input);
+    const enriched = enrichUpdateInput(input);
+    validateUpdateCarta(enriched);
+    const payload = fromCartaToDb(enriched);
     const { data, error } = await client
       .from("cartas")
       .update(payload)

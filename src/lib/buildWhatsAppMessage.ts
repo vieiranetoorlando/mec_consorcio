@@ -17,6 +17,7 @@ export function buildWhatsAppMessage(cartas: Carta[], resumo: ResumoSelecao): st
     `Credito total: ${formatCurrencyBRL(resumo.totalCredito)}`,
     `Entrada total: ${formatCurrencyBRL(resumo.totalEntrada)}`,
     `Transferencia total: ${formatCurrencyBRL(resumo.totalTransferencia)}`,
+    `Saldo devedor total: ${formatCurrencyBRL(resumo.totalSaldoDevedor)}`,
     `Composicao das parcelas: ${composicao}`,
   ].join("\n");
 }
