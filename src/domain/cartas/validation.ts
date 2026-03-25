@@ -28,6 +28,9 @@ function validateParcelas(parcelas: ParcelaBloco[]): void {
 export function validateCreateCarta(input: CreateCartaInput): void {
   if (!CARTA_TIPOS.includes(input.tipo)) throw new Error("tipo inv\u00E1lido");
   if (!CARTA_STATUS.includes(input.status)) throw new Error("status inv\u00E1lido");
+  if (input.codigo !== undefined && input.codigo !== null && !input.codigo.trim()) {
+    throw new Error("codigo inv\u00E1lido");
+  }
   if (!input.administradora.trim()) throw new Error("administradora obrigat\u00F3ria");
   assertPositive(input.valorCredito, "valorCredito");
   assertPositive(input.entrada, "entrada");
@@ -42,6 +45,9 @@ export function validateUpdateCarta(input: UpdateCartaInput): void {
   if (input.tipo && !CARTA_TIPOS.includes(input.tipo)) throw new Error("tipo inv\u00E1lido");
   if (input.status && !CARTA_STATUS.includes(input.status))
     throw new Error("status inv\u00E1lido");
+  if (input.codigo !== undefined && input.codigo !== null && !input.codigo.trim()) {
+    throw new Error("codigo inv\u00E1lido");
+  }
   if (input.valorCredito !== undefined) assertPositive(input.valorCredito, "valorCredito");
   if (input.entrada !== undefined) assertPositive(input.entrada, "entrada");
   if (input.parcelas !== undefined) validateParcelas(input.parcelas);

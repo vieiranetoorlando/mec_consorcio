@@ -199,6 +199,6 @@ export const cartasMock: Carta[] = baseCartasMock.map((carta) => ({
   ...carta,
   parcelas: [{ prazo: carta.prazo, valor: carta.parcela }],
   saldoDevedor: calculateSaldoDevedor([{ prazo: carta.prazo, valor: carta.parcela }]),
-  status: carta.status ?? "ATIVA",
+  status: carta.status ?? "DISPONIVEL",
   transferencia: carta.transferencia ?? Math.round(carta.valorCredito * 0.012),
 }));

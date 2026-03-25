@@ -6,7 +6,11 @@ export const CARTA_TIPOS = [
   "Capital de giro",
 ] as const;
 
-export const CARTA_STATUS = ["ATIVA", "VENDIDA", "PAUSADA"] as const;
+export const CARTA_STATUS = ["DISPONIVEL", "RESERVADA"] as const;
+export const CARTA_STATUS_LABELS: Record<(typeof CARTA_STATUS)[number], string> = {
+  DISPONIVEL: "Disponível",
+  RESERVADA: "Reservada",
+};
 
 export type CartaTipo = (typeof CARTA_TIPOS)[number];
 export type CartaStatus = (typeof CARTA_STATUS)[number];
@@ -18,6 +22,7 @@ export type ParcelaBloco = {
 
 export type Carta = {
   id: string;
+  codigo?: string | null;
   tipo: CartaTipo;
   valorCredito: number;
   entrada: number;
@@ -58,6 +63,7 @@ export type ResumoSelecao = {
 
 export type CartaDbRow = {
   id: string;
+  codigo?: string | null;
   tipo: string;
   valor_credito: number | string;
   entrada: number | string;

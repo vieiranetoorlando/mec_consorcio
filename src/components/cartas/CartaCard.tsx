@@ -1,3 +1,4 @@
+import { CARTA_STATUS_LABELS, CARTA_TIPOS } from "@/domain/cartas/types";
 import { toCartaReference } from "@/lib/cartaReference";
 import { formatParcelasFlow } from "@/lib/cartas";
 import { formatCurrencyBRL } from "@/lib/formatCurrencyBRL";
@@ -9,15 +10,32 @@ type CartaCardProps = {
   onToggle: (id: string) => void;
 };
 
+function getTipoAccentClasses(tipo: Carta["tipo"]): string {
+  if (tipo === CARTA_TIPOS[0]) return "border-l-amber-400";
+  if (tipo === CARTA_TIPOS[1]) return "border-l-sky-400";
+  if (tipo === CARTA_TIPOS[2] || tipo === CARTA_TIPOS[3]) return "border-l-emerald-400";
+  return "border-l-neutral-500";
+}
+
 export function CartaCard({ carta, selected, onToggle }: CartaCardProps) {
-  const referencia = toCartaReference(carta.id);
+  const referencia = toCartaReference(carta.id, carta.codigo);
 
   return (
-    <article className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-4">
+    <article
+      className={[
+        "rounded-xl border border-neutral-800 border-l-4 bg-neutral-900/60 p-4",
+        getTipoAccentClasses(carta.tipo),
+      ].join(" ")}
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs text-gold-400">{referencia}</p>
-          <h3 className="mt-1 text-base font-semibold text-white">{carta.tipo}</h3>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <h3 className="text-base font-semibold text-white">{carta.tipo}</h3>
+            <span className="rounded-full border border-neutral-700 px-2 py-0.5 text-[11px] text-neutral-200">
+              {CARTA_STATUS_LABELS[carta.status]}
+            </span>
+          </div>
         </div>
         <input
           type="checkbox"

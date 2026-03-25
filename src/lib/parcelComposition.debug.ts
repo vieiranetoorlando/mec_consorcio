@@ -17,7 +17,7 @@ function mockCarta(id: string, prazo: number, parcela: number): Carta {
     saldoDevedor: calculateSaldoDevedor(parcelas),
     transferencia: 1000,
     administradora: "Porto Seguro",
-    status: "ATIVA",
+    status: "DISPONIVEL",
   };
 }
 

@@ -10,7 +10,7 @@ export async function getCartasContempladas(): Promise<Carta[]> {
   } catch {
     // Fallback defensivo para evitar quebra da página pública.
     return cartasMock
-      .map((item) => ({ ...item, status: item.status ?? "ATIVA" }))
-      .filter((item) => item.status === "ATIVA");
+      .map((item) => ({ ...item, status: item.status ?? "DISPONIVEL" }))
+      .filter((item) => item.status === "DISPONIVEL");
   }
 }

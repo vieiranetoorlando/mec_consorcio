@@ -3,7 +3,9 @@ import { formatCurrencyBRL } from "@/lib/formatCurrencyBRL";
 import type { Carta, ResumoSelecao } from "@/types/cartas";
 
 export function buildWhatsAppMessage(cartas: Carta[], resumo: ResumoSelecao): string {
-  const referencias = cartas.map((carta) => toCartaReference(carta.id)).join(", ");
+  const referencias = cartas
+    .map((carta) => toCartaReference(carta.id, carta.codigo))
+    .join(", ");
   const composicao = resumo.parcelasComposicao
     .map((bloco) => `${bloco.meses}x ${formatCurrencyBRL(bloco.valor)}`)
     .join(" | ");

@@ -49,8 +49,8 @@ function enrichUpdateInput(input: UpdateCartaInput): UpdateCartaInput {
 export const cartasService = {
   async listPublic(client: SupabaseClient): Promise<Carta[]> {
     const { data, error } = await getBaseQuery(client)
-      .eq("status", "ATIVA")
-      .order("created_at", { ascending: false });
+      .in("status", ["DISPONIVEL", "ATIVA"])
+      .order("valor_credito", { ascending: true });
 
     if (error) throw error;
     return (data as CartaDbRow[]).map(fromDbToCarta);

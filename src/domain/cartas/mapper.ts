@@ -10,12 +10,24 @@ function toNumber(value: number | string | null | undefined): number {
   return typeof value === "number" ? value : Number(value);
 }
 
+function normalizeStatus(status: string): CartaStatus {
+  const normalized = status.trim().toUpperCase();
+
+  if (normalized === "ATIVA" || normalized === "DISPONIVEL") return "DISPONIVEL";
+  if (normalized === "PAUSADA" || normalized === "VENDIDA" || normalized === "RESERVADA") {
+    return "RESERVADA";
+  }
+
+  return "DISPONIVEL";
+}
+
 export function fromDbToCarta(row: CartaDbRow): Carta {
   const parcelas = normalizeParcelas(row.parcelas_json, row.prazo, toNumber(row.parcela));
   const legacy = deriveLegacyParcelFields(parcelas);
 
   return {
     id: row.id,
+    codigo: row.codigo?.trim() ? row.codigo.trim() : undefined,
     tipo: row.tipo as CartaTipo,
     valorCredito: toNumber(row.valor_credito),
     entrada: toNumber(row.entrada),
@@ -30,7 +42,7 @@ export function fromDbToCarta(row: CartaDbRow): Carta {
     administradora: row.administradora,
     logoAdministradora: row.logo_administradora ?? undefined,
     descricao: row.descricao ?? undefined,
-    status: row.status as CartaStatus,
+    status: normalizeStatus(row.status),
     ownerId: row.owner_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -39,6 +51,7 @@ export function fromDbToCarta(row: CartaDbRow): Carta {
 
 export function fromCartaToDb(carta: Partial<Carta>) {
   return {
+    ...(carta.codigo !== undefined ? { codigo: carta.codigo } : {}),
     ...(carta.tipo ? { tipo: carta.tipo } : {}),
     ...(carta.valorCredito !== undefined ? { valor_credito: carta.valorCredito } : {}),
     ...(carta.entrada !== undefined ? { entrada: carta.entrada } : {}),

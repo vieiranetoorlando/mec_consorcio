@@ -10,12 +10,17 @@ import type {
   CreateCartaInput,
   ParcelaBloco,
 } from "@/domain/cartas/types";
-import { CARTA_STATUS, CARTA_TIPOS } from "@/domain/cartas/types";
+import {
+  CARTA_STATUS,
+  CARTA_STATUS_LABELS,
+  CARTA_TIPOS,
+} from "@/domain/cartas/types";
 import {
   calculateSaldoDevedor,
   deriveLegacyParcelFields,
   formatParcelasFlow,
 } from "@/lib/cartas";
+import { toCartaReference } from "@/lib/cartaReference";
 import { formatCurrencyInput, parseCurrencyInput } from "@/lib/currency";
 import { formatCurrencyBRL } from "@/lib/formatCurrencyBRL";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -27,6 +32,7 @@ type ParcelaForm = {
 };
 
 type CartaForm = {
+  codigo: string;
   tipo: CartaTipo;
   valorCredito: string;
   entrada: string;
@@ -46,6 +52,7 @@ function createParcelaForm(bloco?: Partial<ParcelaBloco>): ParcelaForm {
 }
 
 const initialForm: CartaForm = {
+  codigo: "",
   tipo: CARTA_TIPOS[0],
   valorCredito: "",
   entrada: "",
@@ -53,7 +60,7 @@ const initialForm: CartaForm = {
   parcelas: [createParcelaForm()],
   administradora: "",
   descricao: "",
-  status: "ATIVA",
+  status: "DISPONIVEL",
 };
 
 export function AdminCartasManager() {
@@ -136,6 +143,7 @@ export function AdminCartasManager() {
   function fillForEdit(item: Carta) {
     setEditingId(item.id);
     setForm({
+      codigo: item.codigo ?? "",
       tipo: item.tipo,
       valorCredito: formatCurrencyInput(item.valorCredito),
       entrada: formatCurrencyInput(item.entrada),
@@ -183,6 +191,7 @@ export function AdminCartasManager() {
     const legacy = deriveLegacyParcelFields(parcelas);
 
     return {
+      codigo: form.codigo.trim() ? form.codigo.trim() : null,
       tipo: form.tipo,
       valorCredito: parseCurrencyInput(form.valorCredito),
       entrada: parseCurrencyInput(form.entrada),
@@ -269,6 +278,18 @@ export function AdminCartasManager() {
         <h2 className="mb-4 text-sm font-semibold text-gold-300">{title}</h2>
         <form className="grid gap-3 sm:grid-cols-2" onSubmit={submit}>
           <label className="space-y-1 text-xs text-neutral-300">
+            <span>Código da carta</span>
+            <input
+              value={form.codigo}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, codigo: event.target.value.toUpperCase() }))
+              }
+              className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-white"
+              placeholder="Ex: IMV-245"
+            />
+          </label>
+
+          <label className="space-y-1 text-xs text-neutral-300">
             <span>Tipo</span>
             <select
               value={form.tipo}
@@ -296,7 +317,7 @@ export function AdminCartasManager() {
             >
               {CARTA_STATUS.map((status) => (
                 <option key={status} value={status}>
-                  {status}
+                  {CARTA_STATUS_LABELS[status]}
                 </option>
               ))}
             </select>
@@ -428,7 +449,7 @@ export function AdminCartasManager() {
         <table className="min-w-full text-left text-sm">
           <thead className="bg-neutral-950 text-xs uppercase tracking-wide text-neutral-400">
             <tr>
-              <th className="px-4 py-3">ID</th>
+              <th className="px-4 py-3">Código</th>
               <th className="px-4 py-3">Tipo</th>
               <th className="px-4 py-3">Credito</th>
               <th className="px-4 py-3">Fluxo</th>
@@ -453,12 +474,14 @@ export function AdminCartasManager() {
             ) : (
               items.map((item) => (
                 <tr key={item.id} className="border-t border-neutral-800 text-neutral-100">
-                  <td className="px-4 py-3 text-xs text-gold-300">{item.id.slice(0, 8)}</td>
+                  <td className="px-4 py-3 text-xs text-gold-300">
+                    {toCartaReference(item.id, item.codigo)}
+                  </td>
                   <td className="px-4 py-3">{item.tipo}</td>
                   <td className="px-4 py-3">{formatCurrencyBRL(item.valorCredito)}</td>
                   <td className="px-4 py-3">{formatParcelasFlow(item.parcelas)}</td>
                   <td className="px-4 py-3">{formatCurrencyBRL(item.saldoDevedor)}</td>
-                  <td className="px-4 py-3">{item.status}</td>
+                  <td className="px-4 py-3">{CARTA_STATUS_LABELS[item.status]}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button

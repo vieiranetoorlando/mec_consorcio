@@ -11,6 +11,22 @@ type RouteParams = {
   params: Promise<{ id: string }>;
 };
 
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof AppError) return { message: error.message, status: error.statusCode };
+  if (error instanceof Error) return { message: error.message, status: 400 };
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return { message: error.message, status: 400 };
+  }
+
+  return { message: fallback, status: 500 };
+}
+
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     await requireAdminUser();
@@ -21,9 +37,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (!updated) return fail("Carta nao encontrada.", 404);
     return ok({ data: updated });
   } catch (error) {
-    if (error instanceof AppError) return fail(error.message, error.statusCode);
-    if (error instanceof Error) return fail(error.message, 400);
-    return fail("Nao foi possivel atualizar carta.", 500);
+    const parsed = getErrorMessage(error, "Nao foi possivel atualizar carta.");
+    return fail(parsed.message, parsed.status);
   }
 }
 
@@ -36,7 +51,7 @@ export async function DELETE(_: NextRequest, { params }: RouteParams) {
     if (!removed) return fail("Carta nao encontrada.", 404);
     return ok({ success: true });
   } catch (error) {
-    if (error instanceof AppError) return fail(error.message, error.statusCode);
-    return fail("Nao foi possivel excluir carta.", 500);
+    const parsed = getErrorMessage(error, "Nao foi possivel excluir carta.");
+    return fail(parsed.message, parsed.status);
   }
 }
